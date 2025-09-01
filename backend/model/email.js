@@ -1,6 +1,5 @@
 const mongoose=require("mongoose")
 
-
 const EmailSechema=new mongoose.Schema({
     to:{
         type:String,
@@ -10,14 +9,14 @@ const EmailSechema=new mongoose.Schema({
         type:String,
         required:true
     },
-   subject:String,
-   body:String,
-   date:{
+    subject:String,
+    body:String,
+    date:{
     type:Date,
     required:true,
-   },
-   image:String,
-   name:{
+    },
+    image:String,
+    name:{
     type:String,
     required:true
 },
@@ -34,10 +33,11 @@ bin:{
 type:{
     type:String,
     required:true
+},
+isSpam:{
+    type:Boolean,
+    default:false
 }
-
-
 })
-
 
 module.exports=mongoose.model('email',EmailSechema)
