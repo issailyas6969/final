@@ -1,51 +1,57 @@
 import React from 'react'
 import { ListItem, Checkbox, Typography, Box, styled } from "@mui/material"
-import { StarBorder, Star, Flag } from '@mui/icons-material'; // Import the Flag icon
+import { StarBorder, Star, Flag } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import {routes} from '../routes/route'
+import { routes } from '../routes/route'
 import useApi from '../hooks/useApi';
 import { API_URLS } from '../api/api.url';
 
 const DisplayEmail = ({ email, selectedEmails, setSelectedEmails }) => {
+    const navigate = useNavigate();
     const toggleService = useApi(API_URLS.starredEmail);
+
     const toggleStarred = () => {
         toggleService.call({ id: email._id, value: !email.starred });
         email.starred = !email.starred;
     };
 
-    const onSelectChange=()=>{
-        if(selectedEmails.includes(email._id)){
+    const onSelectChange = () => {
+        if (selectedEmails.includes(email._id)) {
             setSelectedEmails(prevState => prevState.filter(id => id !== email._id));
-        }else{
+        } else {
             setSelectedEmails(prevState => [...prevState, email._id]);
         }
     }
 
+    const onEmailClick = () => {
+        navigate(routes.view.path, { state: { email: { ...email } } });
+    }
+
     const reduceEmailBody = (body, maxLength) => {
         if (body.length <= maxLength) {
-          return body;
+            return body;
         }
         return body.slice(0, maxLength) + "...";
-      };
-    
+    };
+
     const truncatedBody = email.body ? reduceEmailBody(email.body, 20) : '';
-    
-    const Wrapper=styled(Box)({
-        padding:'0 0 0 10px',
+
+    const Wrapper = styled(Box)({
+        padding: '0 0 0 10px',
         background: '#f2f6fc',
-        display:'flex',
-        alignItems:'center',
+        display: 'flex',
+        alignItems: 'center',
         cursor: 'pointer',
-        '&>div':{
+        '&>div': {
             display: 'flex',
-             width: '100%',
+            width: '100%',
         },
-        '& > div > p':{
+        '& > div > p': {
             fontSize: '14px',
         }
     })
-    
-    const Indicator=styled(Typography)({
+
+    const Indicator = styled(Typography)({
         fontSize: '12px !important',
         background: '#ddd',
         color: '#222',
@@ -69,15 +75,13 @@ const DisplayEmail = ({ email, selectedEmails, setSelectedEmails }) => {
         fontSize: 12,
         color: '#5F6368'
     })
-    const navigate=useNavigate()
-        
+
     return (
         <Wrapper>
             <Checkbox size="small"
                 checked={selectedEmails.includes(email._id)}
-                onChange={()=>onSelectChange()}
+                onChange={() => onSelectChange()}
             />
-            {/* Flag Icons */}
             {email.isSpam ? (
                 <Flag color="error" style={{ marginRight: 10 }} />
             ) : (
@@ -85,12 +89,12 @@ const DisplayEmail = ({ email, selectedEmails, setSelectedEmails }) => {
             )}
 
             {email.starred ? (
-                <Star fontSize="small" style={{ marginRight: 10,color:'#FFF200' }} onClick={toggleStarred} />
+                <Star fontSize="small" style={{ marginRight: 10, color: '#FFF200' }} onClick={toggleStarred} />
             ) : (
                 <StarBorder fontSize="small" style={{ marginRight: 10 }} onClick={toggleStarred} />
             )}
-            <Box onClick={() => navigate(routes.view.path, { state: { email: email }})}>
-                <Typography style={{ width: 200,overflow:'hidden' }}>{email.name}</Typography>
+            <Box onClick={onEmailClick}>
+                <Typography style={{ width: 200, overflow: 'hidden' }}>{email.name}</Typography>
                 {email.isSpam ? (
                     <SpamIndicator>Spam</SpamIndicator>
                 ) : (
@@ -99,7 +103,7 @@ const DisplayEmail = ({ email, selectedEmails, setSelectedEmails }) => {
                 <Typography>{email.subject} {email.body && '-'}{truncatedBody}</Typography>
                 <Date>
                     {(new window.Date(email.date).getDate())}
-                    {(new window.Date(email.date).toLocaleString('default',{month:'long'}))}
+                    {(new window.Date(email.date).toLocaleString('default', { month: 'long' }))}
                 </Date>
             </Box>
         </Wrapper>

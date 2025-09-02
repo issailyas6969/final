@@ -1,6 +1,7 @@
-const email = require('../model/email');
+/* eslint-disable no-unused-vars */
+import Email from "../model/email.js";
 
-const saveSentEmail = (request, response) => {
+export const saveSentEmail = (request, response) => {
     try {
         const { subject, body } = request.body;
         let isSpam = false;
@@ -11,7 +12,7 @@ const saveSentEmail = (request, response) => {
             isSpam = true;
         }
 
-        const newEmail = new email({
+        const newEmail = new Email({
             ...request.body,
             isSpam,
         });
@@ -23,24 +24,22 @@ const saveSentEmail = (request, response) => {
     }
 };
 
-const getEmails = async (request, response) => {
+export const getEmails = async (request, response) => {
     try {
         let emails;
 
         if (request.params.type === 'starred') {
-            emails = await email.find({ starred: true, bin: false });
+            emails = await Email.find({ starred: true, bin: false });
         } else if (request.params.type === 'bin') {
-            emails = await email.find({ bin: true });
+            emails = await Email.find({ bin: true });
         } else if (request.params.type === 'allmail') {
-            emails = await email.find({});
+            emails = await Email.find({});
         } else if (request.params.type === 'inbox') {
-            // Corrected to fetch emails with type 'inbox' that are not in the bin
-            emails = await email.find({ type: 'inbox', bin: false });
+            emails = await Email.find({ type: 'inbox', bin: false });
         } else if (request.params.type === 'spam') {
-            // Added to fetch emails that are spam and not in the bin
-            emails = await email.find({ isSpam: true, bin: false });
+            emails = await Email.find({ isSpam: true, bin: false });
         } else {
-            emails = await email.find({ type: request.params.type });
+            emails = await Email.find({ type: request.params.type });
         }
 
         response.status(200).json(emails);
@@ -49,9 +48,9 @@ const getEmails = async (request, response) => {
     }
 };
 
-const moveToBin = async (request, response) => {
+export const moveToBin = async (request, response) => {
     try {
-        await email.updateMany({ _id: { $in: request.body } }, { $set: { bin: true, starred: false, type: '' } });
+        await Email.updateMany({ _id: { $in: request.body } }, { $set: { bin: true, starred: false, type: '' } });
         return response.status(200).json("email deleted succesfully");
     } catch (error) {
         console.log(error);
@@ -59,9 +58,9 @@ const moveToBin = async (request, response) => {
     }
 };
 
-const starredEmail = async (request, response) => {
+export const starredEmail = async (request, response) => {
     try {
-        await email.updateOne({ _id: request.body.id }, { $set: { starred: request.body.value } });
+        await Email.updateOne({ _id: request.body.id }, { $set: { starred: request.body.value } });
         response.status(201).json('Value is updated');
     } catch (error) {
         console.log(error);
@@ -69,13 +68,41 @@ const starredEmail = async (request, response) => {
     }
 };
 
-const deleteEmail = async (request, response) => {
+export const deleteEmail = async (request, response) => {
     try {
-        await email.deleteMany({ _id: { $in: request.body } });
+        await Email.deleteMany({ _id: { $in: request.body } });
         response.status(200).json('emails deleted successfully');
     } catch (error) {
         response.status(500).json(error.message);
     }
 };
 
-module.exports = { saveSentEmail, getEmails, moveToBin, starredEmail, deleteEmail };
+// New function to check a URL for spam
+export const checkURLforSpam = async (request, response) => {
+    try {
+        const { url } = request.body;
+
+        // Check if the URL is missing or not a string
+        if (!url || typeof url !== 'string') {
+            return response.status(400).json({ isSpam: false, message: 'Invalid or missing URL.' });
+        }
+
+        const maliciousDomains = [
+            'free-money-now.com',
+            'unclaimed-prize.net',
+            'win-lottery.co'
+        ];
+
+        const isSpamURL = maliciousDomains.some(domain => url.includes(domain));
+        
+        if (isSpamURL) {
+            return response.status(200).json({ isSpam: true, message: 'Warning: This URL is detected as spam.' });
+        }
+
+        return response.status(200).json({ isSpam: false, message: 'This URL seems safe.' });
+
+    } catch (error) {
+        console.error(error);
+        return response.status(500).json({ isSpam: false, message: 'An error occurred.' });
+    }
+};
