@@ -1,43 +1,49 @@
-const mongoose=require("mongoose")
+import mongoose from 'mongoose';
 
-const EmailSechema=new mongoose.Schema({
-    to:{
-        type:String,
-        required:true
+const EmailSchema = new mongoose.Schema({
+    to: {
+        type: String,
+        required: true,
     },
-    from:{
-        type:String,
-        required:true
+    from: {
+        type: String,
+        required: true,
     },
-    subject:String,
-    body:String,
-    date:{
-    type:Date,
-    required:true,
+    subject: String,
+    body: String,
+    date: {
+        type: Date,
+        required: true,
     },
-    image:String,
-    name:{
-    type:String,
-    required:true
-},
-starred:{
-    type:Boolean,
-    required:true,
-    default:false,
-},
-bin:{
-    type:Boolean,
-    required:true,
-    default:false,
-},
-type:{
-    type:String,
-    required:true
-},
-isSpam:{
-    type:Boolean,
-    default:false
-}
-})
+    image: String,
+    name: {
+        type: String,
+        required: true,
+    },
+    starred: {
+        type: Boolean,
+        required: true,
+        default: false
+    },
+    bin: {
+        type: Boolean,
+        required: true,
+        default: false
+    },
+    type: {
+        type: String,
+        required: true,
+    },
+    isSpam: {
+        type: Boolean,
+        required: true,
+        default: false
+    },
+    ipAddress: {
+        type: String,
+    },
+});
 
-module.exports=mongoose.model('email',EmailSechema)
+const Email = mongoose.model('emails', EmailSchema);
+
+export default Email;
