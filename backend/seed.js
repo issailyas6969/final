@@ -1,11 +1,12 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import Email from './model/email.js'; // Use ES module import syntax
-import data from './data/emails.json' with { type: 'json' }; // Corrected import for JSON file
+import fs from 'fs';
+import path from 'path';
+import Email from './model/email.js';
 
-dotenv.config(); // Load environment variables from .env file
+dotenv.config();
 
-const DB_URI = process.env.MONGO_URI; // Use the environment variable
+const DB_URI = process.env.MONGO_URI;
 
 const seedDB = async () => {
     try {
@@ -16,13 +17,48 @@ const seedDB = async () => {
         await mongoose.connect(DB_URI);
         console.log('Database connected successfully.');
 
-        // Clear existing data to prevent duplicates
+        // Clear existing data
         await Email.deleteMany({});
         console.log('Existing emails cleared.');
 
-        // Insert new emails from the data file
-        await Email.insertMany(data);
-        console.log('Database seeded with initial emails.');
+        // Read emails.json dynamically
+        const dataPath = path.resolve('./data/emails.json');
+        const fileContent = fs.readFileSync(dataPath, 'utf-8');
+        const data = JSON.parse(fileContent);
+
+        // Enhance data with ipInfo + vpnInfo
+        const enhancedData = data.map((email, index) => {
+            let testIP;
+            let safeStatus;
+            let vpnInfo;
+
+            if (index % 3 === 0) {
+                testIP = "8.8.8.8";        // Google DNS (Safe)
+                safeStatus = true;
+                vpnInfo = { isVPN: false };
+            } else if (index % 3 === 1) {
+                testIP = "123.45.67.89";   // Mock risky IP
+                safeStatus = false;
+                vpnInfo = { isVPN: true, org: "NordVPN", country: "Netherlands" };
+            } else {
+                testIP = "192.168.0.10";   // Private IP (Safe)
+                safeStatus = true;
+                vpnInfo = { isVPN: false };
+            }
+
+            return {
+                ...email,
+                ipInfo: {
+                    address: testIP,
+                    reputationScore: safeStatus ? 0 : 95,
+                    safe: safeStatus
+                },
+                vpnInfo
+            };
+        });
+
+        await Email.insertMany(enhancedData);
+        console.log('Database seeded with emails including IP + VPN info.');
 
     } catch (error) {
         console.error('Error seeding the database:', error);

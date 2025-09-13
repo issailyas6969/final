@@ -45,6 +45,7 @@ const DisplayEmail = ({ email, selectedEmails, setSelectedEmails }) => {
         '&>div': {
             display: 'flex',
             width: '100%',
+            flexDirection: 'column'
         },
         '& > div > p': {
             fontSize: '14px',
@@ -58,15 +59,27 @@ const DisplayEmail = ({ email, selectedEmails, setSelectedEmails }) => {
         borderRadius: '4px',
         marginRight: '6px',
         padding: '0 4px',
+        display: 'inline-block'
     })
 
-    const SpamIndicator = styled(Typography)({
-        fontSize: '12px !important',
+    const SpamIndicator = styled(Indicator)({
         background: '#ff4d4d',
-        color: '#fff',
-        borderRadius: '4px',
-        marginRight: '6px',
-        padding: '0 4px',
+        color: '#fff'
+    })
+
+    const SafeIndicator = styled(Indicator)({
+        background: '#4caf50',
+        color: '#fff'
+    })
+
+    const SuspiciousIndicator = styled(Indicator)({
+        background: '#ff9800',
+        color: '#fff'
+    })
+
+    const VPNIndicator = styled(Indicator)({
+        background: '#2196f3',
+        color: '#fff'
     })
 
     const Date = styled(Typography)({
@@ -93,18 +106,50 @@ const DisplayEmail = ({ email, selectedEmails, setSelectedEmails }) => {
             ) : (
                 <StarBorder fontSize="small" style={{ marginRight: 10 }} onClick={toggleStarred} />
             )}
+
             <Box onClick={onEmailClick}>
                 <Typography style={{ width: 200, overflow: 'hidden' }}>{email.name}</Typography>
+                
+                {/* Spam / Inbox */}
                 {email.isSpam ? (
                     <SpamIndicator>Spam</SpamIndicator>
                 ) : (
                     <Indicator>Inbox</Indicator>
                 )}
-                <Typography>{email.subject} {email.body && '-'}{truncatedBody}</Typography>
+
+                {/* IP Safety */}
+                {email.ipInfo && (
+                    email.ipInfo.safe ? (
+                        <SafeIndicator>Safe</SafeIndicator>
+                    ) : (
+                        <SuspiciousIndicator>Suspicious</SuspiciousIndicator>
+                    )
+                )}
+
+                {/* VPN Indicator */}
+                {email.vpnInfo && (
+                    email.vpnInfo.isVPN ? (
+                        <VPNIndicator>VPN: {email.vpnInfo.org || "Unknown"}</VPNIndicator>
+                    ) : (
+                        <Indicator>No VPN</Indicator>
+                    )
+                )}
+
+                <Typography>
+                    {email.subject} {email.body && '-'}{truncatedBody}
+                </Typography>
+
                 <Date>
                     {(new window.Date(email.date).getDate())}
                     {(new window.Date(email.date).toLocaleString('default', { month: 'long' }))}
                 </Date>
+
+                {/* Extra details */}
+                {email.ipInfo?.address && (
+                    <Typography style={{ fontSize: '12px', color: '#666', marginTop: '2px' }}>
+                        IP: {email.ipInfo.address} | Score: {email.ipInfo.reputationScore ?? "N/A"}
+                    </Typography>
+                )}
             </Box>
         </Wrapper>
     )

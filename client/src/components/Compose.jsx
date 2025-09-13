@@ -7,7 +7,6 @@ import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined
 import { API_URLS } from '../api/api.url';
 import useApi from "../hooks/useApi";
 
-
 const dialogStyle = {
     height: '90%',
     width: '80%',
@@ -61,10 +60,24 @@ const Compose = ({ openDialog, setOpenDialog }) => {
     const [data, setData] = useState({});
     const [urlToCheck, setUrlToCheck] = useState('');
     const [spamWarning, setSpamWarning] = useState('');
-    
+    const [loading, setLoading] = useState(false);
+
     const sendEmail = useApi(API_URLS.saveSentEmail);
     const saveDraft = useApi(API_URLS.SaveDraftEmails);
-    const [loading, setLoading] = useState(false);
+
+    // 👇 Fetch client IP when component mounts
+    useEffect(() => {
+        const fetchIP = async () => {
+            try {
+                const res = await fetch("https://api.ipify.org?format=json");
+                const ipData = await res.json();
+                setData(prev => ({ ...prev, ipAddress: ipData.ip }));
+            } catch (err) {
+                console.error("Failed to fetch IP:", err);
+            }
+        };
+        fetchIP();
+    }, []);
 
     const onValueChange = (e) => {
         setData({ ...data, [e.target.name]: e.target.value });
@@ -82,6 +95,7 @@ const Compose = ({ openDialog, setOpenDialog }) => {
             name: "lucky",
             starred: false,
             type: 'drafts',
+            ipAddress: data.ipAddress || ""   // 👈 include IP
         };
         saveDraft.call(payload);
         if (!saveDraft.error) {
@@ -117,6 +131,7 @@ const Compose = ({ openDialog, setOpenDialog }) => {
             name: "lucky",
             starred: false,
             type: 'sent',
+            ipAddress: data.ipAddress || "123.45.67.89"   // 👈 include IP
         };
         sendEmail.call(payload);
 
@@ -153,20 +168,16 @@ const Compose = ({ openDialog, setOpenDialog }) => {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            const data = await response.json();
+            const result = await response.json();
             
-            if (data && data.isSpam !== undefined) {
-                if (data.isSpam) {
-                    setSpamWarning(data.message);
-                } else {
-                    setSpamWarning(data.message);
-                }
+            if (result && result.isSpam !== undefined) {
+                setSpamWarning(result.message);
             } else {
-                setSpamWarning('An unknown error occurred. Received an invalid response from the server.');
+                setSpamWarning('Invalid response from server.');
             }
         } catch (error) {
             console.error("URL check failed:", error);
-            setSpamWarning('An error occurred. Could not check URL. Please check your network connection and the URL format.');
+            setSpamWarning('An error occurred. Could not check URL.');
         } finally {
             setLoading(false);
         }
@@ -181,7 +192,7 @@ const Compose = ({ openDialog, setOpenDialog }) => {
                 <Typography>New Message</Typography>
                 <CloseIcon fontSize="small" onClick={(e) => closeComposeClick(e)} />
             </Header>
-            <RecipientWrapper style={{}}>
+            <RecipientWrapper>
                 <InputBase placeholder='Recipients' onChange={(e) => onValueChange(e)} name="to" />
                 <InputBase placeholder='Subject' onChange={(e) => onValueChange(e)} name="subject" />
             </RecipientWrapper>

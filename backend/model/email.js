@@ -39,9 +39,20 @@ const EmailSchema = new mongoose.Schema({
         required: true,
         default: false
     },
-    ipAddress: {
-        type: String,
+
+    // ✅ IP details
+    ipInfo: {
+        address: { type: String },             // extracted IP
+        reputationScore: { type: Number },     // abuse/confidence score (0-100)
+        safe: { type: Boolean, default: true } // safe = true / suspicious = false
     },
+
+    // ✅ VPN details (mocked)
+    vpnInfo: {
+        isVPN: { type: Boolean, default: false }, // true if VPN detected
+        org: { type: String },                    // provider e.g. NordVPN
+        country: { type: String }                 // origin country
+    }
 });
 
 const Email = mongoose.model('emails', EmailSchema);
