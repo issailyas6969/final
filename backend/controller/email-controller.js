@@ -54,8 +54,8 @@ export const saveSentEmail = async (request, response) => {
             "get rich quick",
             "double your income",
             "work from home",
-            "Gift card"
-            "Claim gift card"
+            "Gift card",
+            "Claim gift card",
         
             // 🎯 Phishing & Urgency
             "click here",
