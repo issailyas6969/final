@@ -12,7 +12,7 @@ app.use(express.json());
 app.use("/", routes);
 
 app.listen(3001, async () => {
-  console.log("server running on port 3001");
+  console.log("server running on port ${PORT}");
   await connect();
   console.log("mongoDB connected");
 });
