@@ -1,14 +1,13 @@
 import axios from 'axios';
+import { API_BASE_URL } from './api.url';
 
-const API_URL="http://localhost:3001"
-
-
-const API_GMAIL=async(urlObject,payload,type)=>{
-    return await axios({
-        method:urlObject.method,
-        url:`${API_URL}/${urlObject.endpoint}/${type}`,
-        data:payload
-    })
-}
+const API_GMAIL = async (urlObject, payload = {}, type = '') => {
+  const config = {
+    method: urlObject.method,
+    url: `${API_BASE_URL}/${urlObject.endpoint}${type ? `/${type}` : ''}`,
+    data: payload,
+  };
+  return await axios(config);
+};
 
 export default API_GMAIL;
