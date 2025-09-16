@@ -5,14 +5,17 @@ import cors from "cors";
 
 const app = express();
 
+// Use Render's PORT environment variable or fallback to 3001 locally
+const PORT = process.env.PORT || 3001;
+
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 app.use("/", routes);
 
-app.listen(3001, async () => {
-  console.log("server running on port ${PORT}");
+app.listen(PORT, async () => {
+  console.log(`Server running on port ${PORT}`); // backticks for interpolation
   await connect();
   console.log("mongoDB connected");
 });
