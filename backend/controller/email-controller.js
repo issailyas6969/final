@@ -141,15 +141,15 @@ export const getEmails = async (request, response) => {
         let emails;
 
         if (request.params.type === "starred") {
-            emails = await Email.find({ starred: true, bin: false });
+            emails = await Email.find({ starred: true, bin: { $in: [false, "false"] } });
         } else if (request.params.type === "bin") {
-            emails = await Email.find({ bin: true });
+            emails = await Email.find({ bin: { $in: [true, "true"] } });
         } else if (request.params.type === "allmail") {
             emails = await Email.find({});
         } else if (request.params.type === "inbox") {
-            emails = await Email.find({ type: "inbox", bin: false });
+            emails = await Email.find({ type: "inbox", bin: { $in: [false, "false"] } });
         } else if (request.params.type === "spam") {
-            emails = await Email.find({ isSpam: true, bin: false });
+            emails = await Email.find({ isSpam: true, bin: { $in: [false, "false"] } });
         } else {
             emails = await Email.find({ type: request.params.type });
         }
@@ -281,3 +281,4 @@ export const checkURLforSpam = async (request, response) => {
             .json({ isSpam: false, message: "An error occurred." });
     }
 };
+
